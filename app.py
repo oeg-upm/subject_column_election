@@ -22,7 +22,7 @@ def hello_world():
     return 'Hello World! This is Election'
 
 
-@app.route('/add', methods=["POST"])
+@app.route('/add', methods=["GET", "POST"])
 def add_bite():
     table_name = request.values.get('table').strip()
     column = int(request.values.get('col_id'))
