@@ -25,7 +25,11 @@ def hello_world():
 @app.route('/add', methods=["GET", "POST"])
 def add_bite():
     table_name = request.values.get('table').strip()
-    column = int(request.values.get('col_id'))
+    column = int(request.values.get('subject_col_id'))
+    # if 'subject_col_id' in request.values:
+    #     column = int(request.values.get('subject_col_id'))
+    # else:
+    #     column = int(request.values.get('col_id'))
     slice = int(request.values.get('slice'))
     tot = int(request.values.get('total'))  # total number of slices
 
