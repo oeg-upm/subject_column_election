@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 UPLOAD_DIR = 'local_uploads'
 
+AGGREGATION_TECHNIQUES = [
+    "majority",  # the majority
+    "found-majority",  # the majority ignoring the slice with no subject column
+]
 
 @app.route('/')
 def hello_world():
@@ -32,6 +36,10 @@ def add_bite():
     #     column = int(request.values.get('col_id'))
     slice = int(request.values.get('slice'))
     tot = int(request.values.get('total'))  # total number of slices
+
+    agg_technique = request.values.get('technique')  # aggregation technique
+    if agg_technique not in AGGREGATION_TECHNIQUES:
+        return jsonify(error="Invalid aggregation technique"), 400
 
     apples = Apple.select().where(Apple.table==table_name)
     if len(apples) == 0:
@@ -63,7 +71,7 @@ def add_bite():
         #     p = Process(target=combine_graphs, args=(apple.id,))
         #     p.start()
         g.db.close()
-        p = Process(target=elect, args=(apple.id,))
+        p = Process(target=elect, args=(apple.id, agg_technique))
         p.start()
     return jsonify({"apple": apple.id, "bite": b.id})
 
@@ -97,7 +105,7 @@ def after_request(response):
     return response
 
 
-def elect(apple_id):
+def elect(apple_id, technique):
     """
     :param apple_id:
     :return: most_frequent, agreement (how many agreed on this).
@@ -115,11 +123,20 @@ def elect(apple_id):
     apple.save()
     try:
         col_ids = [b.col_id for b in apple.bites]
-        c = Counter(col_ids)
-        sorted_cols_counts = sorted(c.items(), key=lambda item: item[1])
-        most_frequent_col_id = sorted_cols_counts[-1][0]
-        agreement = sorted_cols_counts[-1][1]*1.0/len(col_ids)
-        apple.elected = most_frequent_col_id
+        # c = Counter(col_ids)
+        # sorted_cols_counts = sorted(c.items(), key=lambda item: item[1])
+        # most_frequent_col_id = sorted_cols_counts[-1][0]
+        # agreement = sorted_cols_counts[-1][1]*1.0/len(col_ids)
+        if technique =="majority":
+            elected_col_id, agreement = majority_aggregation(col_ids)
+        elif technique == "found-majority":
+            elected_col_id, agreement = found_majority_aggregation(col_ids)
+        else:
+            logger.error("unvalid technique: <%s>" % technique)
+            apple.status = STATUS_STOPPED
+            apple.save()
+            return
+        apple.elected = elected_col_id
         apple.agreement = agreement
         apple.status = STATUS_COMPLETE
         apple.save()
@@ -129,6 +146,33 @@ def elect(apple_id):
         apple.save()
     database.close()
     # return most_frequent_col_id, agreement
+
+
+def majority_aggregation(col_ids):
+    """
+    :param col_ids:
+    :return:
+    """
+    c = Counter(col_ids)
+    sorted_cols_counts = sorted(c.items(), key=lambda item: (item[1], item[0]))
+    most_frequent_col_id = sorted_cols_counts[-1][0]
+    agreement = sorted_cols_counts[-1][1] * 1.0 / len(col_ids)
+    return most_frequent_col_id, agreement
+
+
+def found_majority_aggregation(col_ids):
+    """
+    :param col_ids:
+    :return:
+    """
+    c = Counter(col_ids)
+    if len(c.keys()) > 1:
+        del c[-1]
+    # sort by the frequency, and if two has the same frequency favor the left most
+    sorted_cols_counts = sorted(c.items(), key=lambda item: (item[1], item[0]))
+    most_frequent_col_id = sorted_cols_counts[-1][0]
+    agreement = sorted_cols_counts[-1][1] * 1.0 / len(col_ids)
+    return most_frequent_col_id, agreement
 
 
 if __name__ == '__main__':

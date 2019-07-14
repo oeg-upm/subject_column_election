@@ -44,7 +44,7 @@ class ElectTest(unittest.TestCase):
     def test_add_bite(self):
         table_name = "volleyball_single"
         table_col = 0
-        data = {'table': table_name, 'subject_col_id': table_col, 'slice': 0, 'total': 1}
+        data = {'table': table_name, 'subject_col_id': table_col, 'slice': 0, 'total': 1, 'technique': 'found-majority'}
         Bite.delete().execute()  # delete all Bites
         Apple.delete().execute()  # delete all Apples
         result = self.app.post('/add', data=data, content_type='multipart/form-data')
@@ -68,12 +68,14 @@ class ElectTest(unittest.TestCase):
                 }
             ]
         }
-        self.assertEqual(elect(apple_id), None)  # just for the coverage
+        self.assertEqual(elect(apple_id, 'majority'), None)  # just for the coverage
+        self.assertEqual(elect(apple_id, 'found-majority'), None)  # just for the coverage
+
 
     def test_add_multiple_bite(self):
         table_name = "volleyball_double"
         table_col = 0
-        data = {'table': table_name, 'subject_col_id': table_col, 'slice': 0, 'total': 2}
+        data = {'table': table_name, 'subject_col_id': table_col, 'slice': 0, 'total': 2, 'technique': 'majority'}
         Bite.delete().execute()  # delete all Bites
         Apple.delete().execute()  # delete all Apples
         result = self.app.post('/add', data=data, content_type='multipart/form-data')
@@ -96,7 +98,7 @@ class ElectTest(unittest.TestCase):
             ]
         }
         self.assertDictEqual(result.get_json(), j)
-        data = {'table': table_name, 'subject_col_id': table_col, 'slice': 1, 'total': 2}
+        data = {'table': table_name, 'subject_col_id': table_col, 'slice': 1, 'total': 2, 'technique': 'majority'}
         result = self.app.post('/add', data=data, content_type='multipart/form-data')
         self.assertEqual(result.status_code, 200, msg=result.data)
         database.connect(reuse_if_open=True)
