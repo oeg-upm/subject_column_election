@@ -3,3 +3,4 @@
 [![codecov](https://codecov.io/gh/oeg-upm/subject_column_election/branch/master/graph/badge.svg)](https://codecov.io/gh/oeg-upm/subject_column_election)
 
 Given a set of subject column suggestions from subject column spotters, it elects the most probable one.
+

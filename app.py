@@ -154,7 +154,7 @@ def majority_aggregation(col_ids):
     :return:
     """
     c = Counter(col_ids)
-    sorted_cols_counts = sorted(c.items(), key=lambda item: (item[1], item[0]))
+    sorted_cols_counts = sorted(c.items(), key=lambda item: (item[1], -1*item[0]))
     most_frequent_col_id = sorted_cols_counts[-1][0]
     agreement = sorted_cols_counts[-1][1] * 1.0 / len(col_ids)
     return most_frequent_col_id, agreement
@@ -169,7 +169,7 @@ def found_majority_aggregation(col_ids):
     if len(c.keys()) > 1:
         del c[-1]
     # sort by the frequency, and if two has the same frequency favor the left most
-    sorted_cols_counts = sorted(c.items(), key=lambda item: (item[1], item[0]))
+    sorted_cols_counts = sorted(c.items(), key=lambda item: (item[1], -1*item[0]))
     most_frequent_col_id = sorted_cols_counts[-1][0]
     agreement = sorted_cols_counts[-1][1] * 1.0 / len(col_ids)
     return most_frequent_col_id, agreement

@@ -2,7 +2,7 @@ from time import sleep
 import os
 import unittest
 import json
-from app import app, elect
+from app import app, elect, majority_aggregation, found_majority_aggregation
 from app import UPLOAD_DIR
 from models import create_tables, get_database, Bite, Apple, STATUS_COMPLETE, STATUS_NEW
 
@@ -117,3 +117,37 @@ class ElectTest(unittest.TestCase):
                 }
             ]
         }
+
+    def test_majority(self):
+        col_ids = [-1, -1, -1, 2]
+        subj_col, _ = majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, -1)
+
+        col_ids = [-1, 0, 1, 1, 2, 2]
+        subj_col, _ = majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, 1)
+
+        col_ids = [-1, 0, 1, 1, 2, 2, 2]
+        subj_col, _ = majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, 2)
+
+        col_ids = [-1, -1, -1]
+        subj_col, _ = found_majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, -1)
+
+    def test_majority_found(self):
+        col_ids = [-1, -1, -1, 2]
+        subj_col, _ = found_majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, 2)
+
+        col_ids = [-1, 0, 1, 1, 2, 2]
+        subj_col, _ = found_majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, 1)
+
+        col_ids = [-1, 0, 1, 1, 2, 2, 2]
+        subj_col, _ = found_majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, 2)
+
+        col_ids = [-1, -1, -1]
+        subj_col, _ = found_majority_aggregation(col_ids=col_ids)
+        self.assertEqual(subj_col, -1)
