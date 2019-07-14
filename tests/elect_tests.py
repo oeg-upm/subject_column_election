@@ -71,7 +71,6 @@ class ElectTest(unittest.TestCase):
         self.assertEqual(elect(apple_id, 'majority'), None)  # just for the coverage
         self.assertEqual(elect(apple_id, 'found-majority'), None)  # just for the coverage
 
-
     def test_add_multiple_bite(self):
         table_name = "volleyball_double"
         table_col = 0
