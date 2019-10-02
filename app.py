@@ -9,6 +9,8 @@ from flask import Flask, g, request, jsonify, send_from_directory, abort
 from models import get_database, create_tables
 from models import Bite, Apple
 from models import STATUS_PROCESSING, STATUS_COMPLETE, STATUS_STOPPED
+from peewee import DatabaseError
+
 logging.basicConfig(level=logging.INFO)
 LOG_LVL = logging.INFO
 logger = logging.getLogger(__name__)
@@ -44,8 +46,12 @@ def add_bite():
     apples = Apple.select().where(Apple.table==table_name)
     if len(apples) == 0:
         logger.log(LOG_LVL, "\nNew apple: table=%s, columns=%d, slice=%d ,total=%d" % (table_name, column, slice, tot))
-        apple = Apple(table=table_name, total=tot)
-        apple.save()
+        try:
+            apple = Apple(table=table_name, total=tot)
+            apple.save()
+        except DatabaseError:
+            logger.log(LOG_LVL, "\nCatch existing: table=%s, columns=%d, slice=%d ,total=%d" % (table_name, column, slice, tot))
+            apple = apples[0]
     else:
         apple = apples[0]
         logger.log(LOG_LVL, "\nExisting apple: table=%s, columns=%d, slice=%d ,total=%d" % (table_name, column, slice, tot))

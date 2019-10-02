@@ -24,7 +24,7 @@ APPLE_STATUSES = [
 
 
 class Apple(BaseModel):
-    table = CharField()  # table name or id
+    table = CharField(unique=True)  # table name or id
     status = CharField(default=STATUS_NEW, choices=APPLE_STATUSES)  # the status of merging
     complete = BooleanField(default=False)  # Whether there are missing slices or not
     total = IntegerField()  # the total number of slices
